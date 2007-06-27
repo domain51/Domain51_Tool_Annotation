@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Domain51_Tool_Annotation" basedir="." default="make">
+    <taskdef classname="phing.tasks.ext.d51PearPkg2Task" name="d51pearpkg2" />
+    
+    <property name="version" value="0.1" />
+    
+    <target name="export">
+        <echo msg="Exporting SVN files" />
+        <delete dir="./build" />
+        <exec command="svn export ./src ./build" />
+    </target>
+    
+    <target name="build" depends="export">
+        <d51pearpkg2 dir="./build" baseinstalldir="/">
+            <name>Domain51_Tool_Annotation</name>
+            <summary>Provides a generic annotation parser</summary>
+            <channel>pear.domain51.com</channel>
+            <description>
+                This package creates a generic annotation parser that is used to parse docblock
+                comments and create values of data that can be used by other programs to infer how
+                an object should be used, treated, etc.
+            </description>
+            
+            <lead user="tswicegood" name="Travis Swicegood" email="developer@domain51.com" />
+            <license>LGPL</license>
+            
+            <version release="${version}" api="0.0.1" />
+            <stability release="alpha" api="alpha" />
+            <notes>
+                This is the initial release of this pacakge
+            </notes>
+        </d51pearpkg2>
+    </target>
+    
+    <target name="make" depends="build">
+        <echo msg="Creating PEAR archive file for Domain51_Tool_Annotation" />
+        <mkdir dir="./build/Domain51_Tool_Annotation-${version}" />
+        <copy todir="./build/Domain51_Tool_Annotation-${version}">
+            <fileset dir="./build">
+                <include name="phing*/**" />
+            </fileset>
+        </copy>
+        <delete dir="./build/phing" />
+        <tar compression="gzip" destfile="Domain51_Tool_Annotation-${version}.tgz" basedir="./build" />
+    </target>
+    
+    <target name="docs" depends="export">
+        <echo msg="Creating documentation" />
+        <phpdoc title="Domain51_Tool_Annotation Docs" 
+            destdir="./apidocs"
+            sourcecode="./build"
+            output="HTML:frames:DOM/earthli"
+        >
+            <fileset dir="./build">
+                <include name="**" />
+            </fileset>
+        </phpdoc>
+    </target>
+</project>
