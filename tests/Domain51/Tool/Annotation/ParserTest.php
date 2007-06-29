@@ -3,6 +3,8 @@
 require_once dirname(__FILE__) . '/../../../bootstrap.php';
 require_once 'Domain51/Tool/Annotation/Parser.php';
 
+Mock::generate('Domain51_Tool_Annotation_ParamsHelper');
+
 class Domain51_Tool_Annontation_ParserTest extends UnitTestCase
 {
 	public function testReturnsACollectionOfAnnotationsAfterParsing()
@@ -50,5 +52,40 @@ END;
 		$this->assertIsA($isNot, 'Domain51_Tool_Annotation_Value');
 		$this->assertEqual($isNot->name, 'isNot');
 		$this->assertEqual($isNot->params, array('Length', $random, '<'));
+	}
+	
+	public function testHandleJavaStyleAnnotations()
+	{
+		$str = "/** @someFunction(arg1, arg2) */";
+		$parser = new Domain51_Tool_Annotation_Parser();
+		$list = $parser->parse($str);
+		$this->assertEqual(1, $list->count());
+		$this->assertTrue($list->has('someFunction'));
+	}
+	
+	public function testParserPropertyCanBeSetToAnyParserHelper()
+	{
+		$parser = new Domain51_Tool_Annotation_Parser();
+		try {
+			$parser->paramsHelper = 'string';
+			$this->fail('exception not caught');
+		} catch (Domain51_Tool_Annotation_Parser_Exception $e) {
+			$this->pass('exception caught');
+			$this->assertEqual(
+				'paramsHelper can only be set to an object that implements Domain51_Tool_Annotation_ParamsHelper',
+				$e->getMessage()
+			);
+		}
+	}
+	
+	public function testOtherParamHelpersCanBeSupplied()
+	{
+		$helper = new MockDomain51_Tool_Annotation_ParamsHelper();
+		$helper->expectOnce('parse', array('some string'));
+		$helper->setReturnValue('parse', array('some', 'string'));
+		
+		$parser = new Domain51_Tool_Annotation_Parser();
+		$parser->paramsHelper = $helper;
+		$parser->parse('/** @is some string');
 	}
 }
